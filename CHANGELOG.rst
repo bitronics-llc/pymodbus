@@ -1,6 +1,19 @@
-Version 1.2.0
-------------------------------------------------------------
 
+Version 1.3.0.rc2
+------------------------------------------------------------
+* Fix encoding problem for ReadDeviceInformationRequest method on python3
+* Fix problem with the usage of ord in python3 while cleaning up receive buffer
+* Fix struct unpack errors with BinaryPayloadDecoder on python3 - string vs bytestring error
+* Calculate expected response size for ReadWriteMultipleRegistersRequest
+* Enhancement for ModbusTcpClient, ModbusTcpClient can now accept connection timeout as one of the parameter
+* Misc updates
+
+Version 1.3.0.rc1
+------------------------------------------------------------
+* Timing improvements over MODBUS Serial interface
+* Modbus RTU use 3.5 char silence before and after transactions
+* Bug fix on FifoTransactionManager , flush stray data before transaction
+* Update repository information
 * Added ability to ignore missing slaves
 * Added ability to revert to ZeroMode
 * Passed a number of extra options through the stack

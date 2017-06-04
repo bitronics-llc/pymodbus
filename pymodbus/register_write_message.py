@@ -19,7 +19,7 @@ class WriteSingleRegisterRequest(ModbusRequest):
     '''
     function_code = 6
     _rtu_frame_size = 8
-
+    
     def __init__(self, address=None, value=None, **kwargs):
         ''' Initializes a new instance
 
@@ -35,9 +35,12 @@ class WriteSingleRegisterRequest(ModbusRequest):
 
         :returns: The encoded packet
         '''
+        packet = struct.pack('>H', self.address)
         if self.skip_encode:
-            return self.value
-        return struct.pack('>HH', self.address, self.value)
+            packet += self.value
+        else:
+            packet += struct.pack('>H', self.value)
+        return packet
 
     def decode(self, data):
         ''' Decode a write single register packet packet request
@@ -45,7 +48,7 @@ class WriteSingleRegisterRequest(ModbusRequest):
         :param data: The request to decode
         '''
         self.address, self.value = struct.unpack('>HH', data)
-
+    
     def execute(self, context):
         ''' Run a write single register request against a datastore
 
@@ -61,12 +64,19 @@ class WriteSingleRegisterRequest(ModbusRequest):
         values = context.getValues(self.function_code, self.address, 1)
         return WriteSingleRegisterResponse(self.address, values[0])
 
+    def get_response_pdu_size(self):
+        """
+        Func_code (1 byte) + Register Address(2 byte) + Register Value (2 bytes)
+        :return: 
+        """
+        return 1 + 2 + 2
+    
     def __str__(self):
         ''' Returns a string representation of the instance
 
         :returns: A string representation of the instance
         '''
-        return "WriteRegisterRequest %d => %d" % (self.address, self.value)
+        return "WriteRegisterRequest %d" % self.address
 
 
 class WriteSingleRegisterResponse(ModbusResponse):
@@ -123,6 +133,7 @@ class WriteMultipleRegistersRequest(ModbusRequest):
     '''
     function_code = 16
     _rtu_byte_count_pos = 6
+    _pdu_length = 5  #func + adress1 + adress2 + outputQuant1 + outputQuant2
 
     def __init__(self, address=None, values=None, **kwargs):
         ''' Initializes a new instance
@@ -147,7 +158,7 @@ class WriteMultipleRegistersRequest(ModbusRequest):
         '''
         packet = struct.pack('>HHB', self.address, self.count, self.byte_count)
         if self.skip_encode:
-            return packet + ''.join(self.values)
+            return packet + b''.join(self.values)
         
         for value in self.values:
             packet += struct.pack('>H', value)
